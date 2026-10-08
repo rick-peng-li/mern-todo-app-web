@@ -11,9 +11,8 @@ function Active() {
                 tasks.map((task, index) => {
                     return (
                         !task.completed && <Task
-                            key={index}
+                            key={task._id || index}
                             task={task}
-                            id={index}
                         />
                     )
                 })

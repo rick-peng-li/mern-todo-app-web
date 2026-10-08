@@ -10,9 +10,8 @@ function Completed() {
                     tasks.map((task, index) => {
                         return (
                             task.completed && <CompletedTask
-                                key={index}
+                                key={task._id || index}
                                 task={task}
-                                id={index}
                             />
                         )
                     })

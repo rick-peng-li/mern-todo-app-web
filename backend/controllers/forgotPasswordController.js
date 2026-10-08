@@ -21,34 +21,45 @@ const forgotPassword = async (req, res) => {
     await user.save();
     
     //Send email with reset token
-    const resetUrl = `https://todo-app-b96a5.web.app/resetPassword?token=${resetToken}`;
-    var transporter = createTransport({
-        service: 'gmail',
-        host: 'smtp.gmail.com',
-        port: 465,
-        secure: true,
-        auth: {
-            user: process.env.GMAIL_USERNAME,
-            pass: process.env.GMAIL_PASSWORD
-        }
-    });
+    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/resetPassword?token=${resetToken}`;
 
-    var mailOptions = {
-        from: 'alok.yadav6000@gmail.com',
-        to: email,
-        subject: "Reset Password",
-        html:`<h1>Reset Password</h1><h2>Click on the link to reset your password</h2><h3>${resetUrl}</h3>`
-    };
+    if (!process.env.GMAIL_USERNAME || !process.env.GMAIL_PASSWORD) {
+        console.log("Email skipped: GMAIL credentials not configured")
+        console.log("Reset URL:", resetUrl)
+        return res.status(200).json({ message: `Reset link: ${resetUrl}` })
+    }
 
-    await transporter.sendMail(mailOptions, function (error, info) {
-        if (error) {
-            console.log(error);
-        } else {
-            console.log('Email sent: ' + info.response);
-        }
-    });
-    
-    res.status(200).json({ message: 'A link to reset your password have been sent to your email.' });
+    try {
+        const transporter = createTransport({
+            service: 'gmail',
+            host: 'smtp.gmail.com',
+            port: 465,
+            secure: true,
+            auth: {
+                user: process.env.GMAIL_USERNAME,
+                pass: process.env.GMAIL_PASSWORD
+            }
+        });
+
+        const mailOptions = {
+            from: process.env.GMAIL_USERNAME,
+            to: email,
+            subject: "Reset Password",
+            html:`<h1>Reset Password</h1><h2>Click on the link to reset your password</h2><h3>${resetUrl}</h3>`
+        };
+
+        transporter.sendMail(mailOptions, function (error, info) {
+            if (error) {
+                console.log(error);
+            } else {
+                console.log('Email sent: ' + info.response);
+            }
+        });
+    } catch (error) {
+        console.log("Email error:", error.message)
+    }
+
+    res.status(200).json({ message: 'A link to reset your password has been sent to your email.' });
   };
   
 //  Route to handle password reset request

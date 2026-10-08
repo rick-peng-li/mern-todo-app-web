@@ -1,27 +1,39 @@
-import React from 'react';
 import moment from 'moment';
 import "./task.css";
 import { useContext } from 'react';
 import TaskContext from '../../context/TaskContext';
+import TokenContext from '../../context/TokenContext';
+import axios from '../../Axios/axios.js';
 import DeleteIcon from '@mui/icons-material/Delete';
-function Task({ task, id }) {
+function Task({ task }) {
     const { dispatch } = useContext(TaskContext);
+    const { userToken } = useContext(TokenContext);
 
-    const handleRemove = (e) => {
+    const handleRemove = async (e) => {
         e.preventDefault();
-        
-
-        dispatch({
-            type: "REMOVE_TASK",
-            id
-        })
+        try {
+            await axios.post("/task/removeTask", { id: task._id }, {
+                headers: { Authorization: `Bearer ${userToken}` }
+            })
+            dispatch({ type: "REMOVE_TASK", id: task._id })
+        } catch (error) {
+            console.log(error);
+        }
     }
 
-    const handleMarkDone = (e) => {
-        dispatch({
-            type: "MARK_DONE",
-            id
-        })
+    const handleMarkDone = async () => {
+        const newCompleted = !task.completed
+        try {
+            const res = await axios.post("/task/updateTask", {
+                id: task._id,
+                completed: newCompleted
+            }, {
+                headers: { Authorization: `Bearer ${userToken}` }
+            })
+            dispatch({ type: "UPDATE_TASK", task: res.data.task })
+        } catch (error) {
+            console.log(error);
+        }
     }
     return (
         <div className='bg-slate-300 py-4 rounded-lg shadow-md flex items-center justify-center gap-2 mb-3'>

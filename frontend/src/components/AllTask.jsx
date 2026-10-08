@@ -11,9 +11,8 @@ function AllTask() {
                     tasks.map((task, index) => {
                         return (
                             <Task
-                                key={index}
+                                key={task._id || index}
                                 task={task}
-                                id={index}
                             />
                         )
                     })
